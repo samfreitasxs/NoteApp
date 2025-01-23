@@ -158,6 +158,9 @@ struct NoteCardView: View {
                 Text("Created: \(formattedDate(note.createdDate))")
                     .font(.footnote)
                     .foregroundColor(.black.opacity(0.6))
+                Text("Modified: \(formattedDate(note.lastModifiledDate))")
+                    .font(.footnote)
+                    .foregroundColor(.black.opacity(0.6))
             }
             .padding()
             
@@ -172,6 +175,7 @@ struct NoteCardView: View {
                 .animation(.easeInOut, value: note.isPinned)
             }
         }
+        
         .contextMenu {
             Button {
                 onEdit()
@@ -185,8 +189,14 @@ struct NoteCardView: View {
             }
         }
     }
+    
+    private func formattedDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
+    }
 }
-
 // MARK: - NoteRowView
 // A view that displays a note in a row style for the list layout.
 struct NoteRowView: View {
@@ -248,10 +258,79 @@ struct NoteRowView: View {
         }
     }
     
-        private func formattedDate(_ date: Date) -> String {
-            let formatter = DateFormatter()
-            formatter.dateStyle = .short
-            formatter.timeStyle = .short
-            return formatter.string(from: date)
+    private func formattedDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
+    }
+}
+
+// MARK: - AddEditNoteView
+// A view for adding or editing a note, with fields for title, content, color, category, and pinned status.
+struct AddEditNoteView: View {
+    // Optional existing note for editing (nil if adding a new note).
+    var note: Note? = nil
+    // Avaiable colors to choose from.
+    var availableColors: [Color]
+    // Callbac to save the new or update note back to the parent view.
+    var onSave: (Note) -> Void
+    
+    //State variables for various inputs.
+    
+    @State private var title: String = ""
+    @State private var content: String = ""
+    @State private var selectedColor: Color = .yellow
+    @State private var isPinned: Bool = false
+    @State private var category: String = "General"
+    
+    // Dimiss enviromente for closing the sheet.
+    @Environment(\.presentationMode) var presentationModel
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section(header: Text("Category")) {
+                    TextField("Enter Title", text: $title)
+                }
+                
+                Section(header: Text("Content")) {
+                    TextEditor(text: $content)
+                    .frame(minHeight: 100)
+                }
+                
+                //Category selection.
+                Section(header: Text("Category")) {
+                    TextField("Category (e.g Work, personal)", text: $category)
+                }
+                
+                //Color selection.
+                Section(header: Text("Color")) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack {
+                            ForEach(availableColors, id: \.self) { color in
+                                Circle()
+                                    .fill(color)
+                                    .frame(width: 30, height: 30)
+                                    .overlay(
+                                    Circle()
+                                        .stroke(Color.black, lineWidth: selectedColor == color ? 3 : 0)
+                                    
+                                    )
+                                    .onTapGesture{
+                                        selectedColor = color
+                                    }
+                            }
+                        }
+                        .padding(.vertical, 5)
+                    }
+                }
+                // Pinned toggle.
+                Section{
+                    Toggle("Pin this note", isOn: $isPinned)
+                }
+            }
+            // Navigation bar title changes based on whether we're adding or editing.
+            .navigationBartitle(note == nil ? "Add Note" : "Edit Note", displayMode: .inline)
         }
     }
+}
