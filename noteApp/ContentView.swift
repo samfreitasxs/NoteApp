@@ -128,7 +128,7 @@ struct NoteCardView: View {
     var onPin: (Note) -> Void
     var body: some View {
         ZStack {
-        // Background with rounded corners and a border.
+            // Background with rounded corners and a border.
             RoundedRectangle(cornerRadius: 10)
                 .fill(note.color)
                 .shadow(color: Color.black.opacity(0.2), radius: 4, x: 2, y: 2)
@@ -158,16 +158,100 @@ struct NoteCardView: View {
                 Text("Created: \(formattedDate(note.createdDate))")
                     .font(.footnote)
                     .foregroundColor(.black.opacity(0.6))
-          }
+            }
             .padding()
             
-       }
-    }
-    
-    private func formattedDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        formatter.timeStyle = .short
-        return formatter.string(from: date)
+            if note.isPinned {
+                Button {
+                    onPin(note)
+                } label: {
+                    Image(systemName: "pin.fill")
+                        .foregroundStyle(.yellow)
+                        .padding(5)
+                }
+                .animation(.easeInOut, value: note.isPinned)
+            }
+        }
+        .contextMenu {
+            Button {
+                onEdit()
+            } label: {
+                Label("Edit", systemImage: "pencil")
+            }
+            Button {
+                onDelete()
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
     }
 }
+
+// MARK: - NoteRowView
+// A view that displays a note in a row style for the list layout.
+struct NoteRowView: View {
+    // The note to display.
+    var note: Note
+    // Callback for editing this note.
+    var onEdit: () -> Void
+    // Callback for deleting this note.
+    var onDelete: () -> Void
+    // Callback for toggling the pin status.
+    var onPin: (Note) -> Void
+    
+    var body: some View {
+        HStack {
+            if note.isPinned {
+                Image(systemName: "pin.fill")
+                    .foregroundStyle(.yellow)
+                    .padding(.trailing, 4)
+            }
+            
+            VStack( alignment: .leading, spacing: 4) {
+                // Title text.
+                Text("Category: \(note.category)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                // Preview of content.
+                Text(note.content)
+                    .font(.body)
+                    .lineLimit(2)
+                    .foregroundColor(.primary)
+            }
+            
+            Spacer()
+            
+            VStack(alignment: .trailing, spacing: 2) {
+                Text("Created:")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+                Text(formattedDate(note.createdDate))
+                    .font(.caption)
+                
+                Text("Modified:")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+                Text(formattedDate(note.lastModifiledDate))
+                    .font(.caption)
+            }
+        }
+        .padding()
+        .background(note.color.opacity(0.3))
+        .cornerRadius(8)
+        .onTapGesture {
+            onPin(note)
+        }
+        .contextMenu {
+            Button("Edit", action: onEdit)
+            Button("Delete", action: onDelete)
+            Button(note.isPinned ? "Unpin" : "Pin") { onPin(note) }
+        }
+    }
+    
+        private func formattedDate(_ date: Date) -> String {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .short
+            formatter.timeStyle = .short
+            return formatter.string(from: date)
+        }
+    }
