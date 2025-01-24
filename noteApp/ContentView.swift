@@ -325,12 +325,16 @@ struct AddEditNoteView: View {
                     }
                 }
                 // Pinned toggle.
-                Section{
+                Section {
                     Toggle("Pin this note", isOn: $isPinned)
                 }
             }
             // Navigation bar title changes based on whether we're adding or editing.
-            .navigationBartitle(note == nil ? "Add Note" : "Edit Note", displayMode: .inline)
+            .navigationBarTitle(note == nil ? "Add Note" : "Edit Note", displayMode: .inline)
+            // Navigation bar buttons.
+            .navigationBarItems(leading: Button("Cancel") { presentationMode.wrappedValue.dismiss() }, trailing: Button("Save") { saveNote() }
+            // Disable Save if either title or content is empty.
+                .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty || content.trimmingCharacters(in: .whitespaces).isEmpty))
         }
     }
 }
