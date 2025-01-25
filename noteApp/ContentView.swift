@@ -337,4 +337,5 @@ struct AddEditNoteView: View {
                 .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty || content.trimmingCharacters(in: .whitespaces).isEmpty))
         }
     }
+    
 }
