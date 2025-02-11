@@ -330,6 +330,7 @@ struct AddEditNoteView: View {
                 }
             }
             // Navigation bar title changes based on whether we're adding or editing.
+            // Disable Save if either title or content is empty.
             .navigationBarTitle(note == nil ? "Add Note" : "Edit Note", displayMode: .inline)
             // Navigation bar buttons.
             .navigationBarItems(leading: Button("Cancel") { presentationMode.wrappedValue.dismiss() }, trailing: Button("Save") { saveNote() }
